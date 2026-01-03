@@ -43,7 +43,6 @@ void GPSRx::select_satellites(void)
 {
     // add new satellites to the list ignore satellites already there
     std::list<SearchResult>::iterator found_sat;
-    bool found = false;
     for(found_sat = search->found.begin(); found_sat != search->found.end(); found_sat++){
         // if(found_sat->sat != 32-1)
         //     continue;

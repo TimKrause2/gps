@@ -31,6 +31,6 @@ class TestSignal
     std::chrono::steady_clock::time_point target_time;
 
 public:
-    TestSignal(float fs, int sat_id, float freq=0.0f, int advance=0, float dfreq=0.0f, float dT=0.0f);
+    TestSignal(float fs, int sat_id, float freq=0.0f, float dfreq=0.0f, float dT=0.0f, int advance=0);
     std::complex<float> evaluate(void);
 };

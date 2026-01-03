@@ -11,8 +11,8 @@
 #define PLL_ERROR_STATS_SIZE 5
 
 Satellite::Satellite(GPSRx &gpsrx, int sat, int fs, float freq)
-    :gpsrx(gpsrx), sat(sat), dco(fs), f_offset_avg(5),
-    pll_error_stats(PLL_ERROR_STATS_SIZE)
+    :gpsrx(gpsrx), sat(sat), f_offset_avg(5),
+    pll_error_stats(PLL_ERROR_STATS_SIZE), dco(fs)
 {
     printf("Satellite::Satellite sat:%d fs:%d freq:%f\n",
            sat+1, fs, freq);

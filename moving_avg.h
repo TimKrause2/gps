@@ -5,10 +5,10 @@
 
 struct MovingAvg
 {
+    int N_points;
     std::unique_ptr<float[]> data;
     int index;
     int divisor;
-    int N_points;
     MovingAvg(int N_points):
         N_points(N_points),
         data(new float[N_points])
@@ -33,9 +33,9 @@ struct MovingAvg
 
 struct MovingStats
 {
+    int N_points;
     std::unique_ptr<float[]> data;
     int index;
-    int N_points;
     bool full;
 
     MovingStats(int N_points):

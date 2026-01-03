@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <thread>
 
-TestSignal::TestSignal(float fs, int sat_id, float freq, int advance, float dfreq, float dT)
+TestSignal::TestSignal(float fs, int sat_id, float freq, float dfreq, float dT, int advance)
     : fs(fs),
-    dfreq(dfreq),
-    dT(dT),
     dco(fs),
     ca(sat_id),
+    dfreq(dfreq),
+    dT(dT),
     dist(RAND_MEAN, RAND_STD)
 {
     dco.set_frequency(freq);

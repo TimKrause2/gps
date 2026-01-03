@@ -44,6 +44,7 @@ enum RxState
 
 struct Satellite
 {
+    GPSRx &gpsrx;
     int sat;
     long sample_index;
     int samples_per_period;
@@ -71,7 +72,6 @@ struct Satellite
     MovingAvg  f_offset_avg;
     MovingStats pll_error_stats;
     RxState rxstate;
-    GPSRx &gpsrx;
     std::complex<float> x_in;
     std::unique_ptr<std::complex<float>[]> rx_buff;
     std::unique_ptr<std::complex<float>[]> rx_buff_fft;
