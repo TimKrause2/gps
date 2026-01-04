@@ -50,12 +50,16 @@ include_directories(BEFORE ${MPLOT_INCLUDE_PATH}/maths)   # Allows sm/Header.h t
 # All the library finding is now done. It's time to compile the program.
 #
 
-add_executable(gps)
+add_executable(gps
+  sensors.h sensors.cpp)
 
 target_sources(gps
   PRIVATE
     gps.cpp lfsr.cpp dco.cpp test_sig.cpp satellite.cpp
     search.cpp prns.cpp lnav.cpp triangulator.cpp
+    constants.h dco.h gps.h lfsr.h test_sig.h
+    satellite.h search.h prns.h lnav.h triangulate.h
+    moving_avg.h ssiq.h
 )
 
 target_link_libraries(gps PRIVATE PkgConfig::FFTW3F_PKG Eigen3::Eigen OpenGL::GL Freetype::Freetype glfw)
