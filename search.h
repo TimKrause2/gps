@@ -14,7 +14,7 @@
 #define N_FREQ ((F_RANGE*2/F_DELTA)+1)
 #define SEC_PER_TRIGGER 10
 
-class GPSRx;
+struct GPSRx;
 
 struct SearchResult
 {

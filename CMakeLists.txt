@@ -51,7 +51,10 @@ include_directories(BEFORE ${MPLOT_INCLUDE_PATH}/maths)   # Allows sm/Header.h t
 #
 
 add_executable(gps
-  sensors.h sensors.cpp)
+  sensors.h sensors.cpp
+  timer.h timer.cpp
+  sensorshost.h sensorshost.cpp
+)
 
 target_sources(gps
   PRIVATE
@@ -59,7 +62,7 @@ target_sources(gps
     search.cpp prns.cpp lnav.cpp triangulator.cpp
     constants.h dco.h gps.h lfsr.h test_sig.h
     satellite.h search.h prns.h lnav.h triangulate.h
-    moving_avg.h ssiq.h
+    moving_avg.h ssiq.h queue.h
 )
 
 target_link_libraries(gps PRIVATE PkgConfig::FFTW3F_PKG Eigen3::Eigen OpenGL::GL Freetype::Freetype glfw)

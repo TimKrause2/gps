@@ -29,7 +29,7 @@
 #include <thread>
 #include <fftw3.h>
 
-class GPSRx;
+struct GPSRx;
 
 enum RxState
 {
@@ -77,6 +77,8 @@ struct Satellite
     std::unique_ptr<std::complex<float>[]> rx_buff_fft;
     std::unique_ptr<std::complex<float>[]> prod_fft;
     std::unique_ptr<std::complex<float>[]> corr;
+    std::unique_ptr<std::complex<float>[]> sensor_iq;
+    int sensor_iq_index;
     fftwf_plan rx_plan;
     fftwf_plan corr_plan;
     std::thread sat_thread;
@@ -96,6 +98,7 @@ public:
     void phase(void);
     void register_transition(int t);
     void register_bit(int b);
+    void sensor_iq_evaluate(std::complex<float> x);
 };
 
 

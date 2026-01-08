@@ -9,6 +9,7 @@
 #define COSTAS_FREQ_FACTOR 0.0005
 #define COSTAS_PHASE_FACTOR 0.01
 #define PLL_ERROR_STATS_SIZE 5
+#define SENSOR_N_DATA 17
 
 Satellite::Satellite(GPSRx &gpsrx, int sat, int fs, float freq)
     :gpsrx(gpsrx), sat(sat), f_offset_avg(5),
@@ -22,6 +23,8 @@ Satellite::Satellite(GPSRx &gpsrx, int sat, int fs, float freq)
     rx_buff_fft.reset(new std::complex<float>[samples_per_period]);
     prod_fft.reset(new std::complex<float>[samples_per_period]);
     corr.reset(new std::complex<float>[samples_per_period]);
+    sensor_iq.reset(new std::complex<float>[SENSOR_N_DATA]);
+    sensor_iq_index = 0;
     rx_plan = fftwf_plan_dft_1d(
         samples_per_period,
         reinterpret_cast<fftwf_complex*>(rx_buff.get()),
@@ -52,11 +55,13 @@ Satellite::Satellite(GPSRx &gpsrx, int sat, int fs, float freq)
     first_subframe_processed = false;
     rxstate = RXSTATE_OFFSET_ACQUIRE;
     sat_thread = std::thread(&Satellite::thread_func, this);
+    gpsrx.sHost->send_add_sat(sat);
 }
 
 Satellite::~Satellite(){
     fftwf_destroy_plan(rx_plan);
     fftwf_destroy_plan(corr_plan);
+    gpsrx.sHost->send_del_sat(sat);
     sat_thread.join();
     printf("Satellite::~Satellite satellite:%d\n", sat+1);
 }
@@ -185,7 +190,9 @@ double Satellite::fix_angle_range(double angle)
 
 void Satellite::frequency(void)
 {
-    float phase = arg(corr[offset_max]);
+    std::complex<float> iq = corr[offset_max];
+    sensor_iq_evaluate(iq);
+    float phase = arg(iq);
     if(phase_reset){
         phase_reset = false;
     }else{
@@ -220,6 +227,7 @@ void Satellite::frequency(void)
 void Satellite::phase(void)
 {
     std::complex<float> iq = corr[offset_max];
+    sensor_iq_evaluate(iq);
     //
     // costas loop
     //
@@ -350,5 +358,15 @@ void Satellite::register_bit(int b)
             }
             subframe_bit_count = 1;
         }
+    }
+}
+
+void Satellite::sensor_iq_evaluate(std::complex<float> x)
+{
+    sensor_iq[sensor_iq_index] = x;
+    if(++sensor_iq_index==SENSOR_N_DATA){
+        gpsrx.sHost->send_sat_data(sat, SENSOR_N_DATA, std::move(sensor_iq));
+        sensor_iq_index = 0;
+        sensor_iq.reset(new std::complex<float>[SENSOR_N_DATA]);
     }
 }

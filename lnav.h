@@ -7,44 +7,6 @@
 
 #include "triangulate.h"
 
-#define d1  0x20000000
-#define d2  0x10000000
-#define d3  0x08000000
-#define d4  0x04000000
-#define d5  0x02000000
-#define d6  0x01000000
-#define d7  0x00800000
-#define d8  0x00400000
-#define d9  0x00200000
-#define d10 0x00100000
-#define d11 0x00080000
-#define d12 0x00040000
-#define d13 0x00020000
-#define d14 0x00010000
-#define d15 0x00008000
-#define d16 0x00004000
-#define d17 0x00002000
-#define d18 0x00001000
-#define d19 0x00000800
-#define d20 0x00000400
-#define d21 0x00000200
-#define d22 0x00000100
-#define d23 0x00000080
-#define d24 0x00000040
-#define d25 0x00000020
-#define d26 0x00000010
-#define d27 0x00000008
-#define d28 0x00000004
-#define d29 0x00000002
-#define d30 0x00000001
-
-#define D25_POLY (d1|d2|d3|d5|d6|d10|d11|d12|d13|d14|d17|d18|d20|d23)
-#define D26_POLY (d2|d3|d4|d6|d7|d11|d12|d13|d14|d15|d18|d19|d21|d24)
-#define D27_POLY (d1|d3|d4|d5|d7|d8|d12|d13|d14|d15|d16|d19|d20|d22)
-#define D28_POLY (d2|d4|d5|d6|d8|d9|d13|d14|d15|d16|d17|d20|d21|d23)
-#define D29_POLY (d1|d3|d5|d6|d7|d9|d10|d14|d15|d16|d17|d18|d21|d22|d24)
-#define D30_POLY (d3|d5|d6|d8|d9|d10|d11|d13|d15|d19|d22|d23|d24)
-
 #define PREAMBLE 0x8B
 
 #define BITS_PER_WORD 30
@@ -56,9 +18,8 @@
 #define SUBFRAMES_PER_FRAME 5
 #define N_PAGES 25
 
-#define mu (3.986005e14)
+#define mu_earth (3.986005e14)
 #define Omega_dot_e (7.2921151467e-5)
-#define F (-4.442807633e-10)
 #define speed_of_light (2.99792458e8)
 
 enum WordID

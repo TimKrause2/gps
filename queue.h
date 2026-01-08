@@ -38,4 +38,14 @@ public:
         stop_thread = true;
         condition.notify_all(); // Notify all waiting threads to check the stop flag
     }
+
+    bool empty(){
+        std::lock_guard<std::mutex> lock(mutex);
+        return queue.empty();
+    }
+
+    int size(){
+        std::lock_guard<std::mutex> lock(mutex);
+        return queue.size();
+    }
 };

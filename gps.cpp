@@ -13,6 +13,7 @@ GPSRx::GPSRx(int fs)
     buffer_index = 0;
     sample_index = 0;
     search.reset(new Search(*this, fs));
+    sHost.reset(new SensorsHost);
 }
 
 void GPSRx::evaluate(std::complex<float> x){
