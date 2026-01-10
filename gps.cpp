@@ -13,7 +13,7 @@ GPSRx::GPSRx(int fs)
     buffer_index = 0;
     sample_index = 0;
     search.reset(new Search(*this, fs));
-    sHost.reset(new SensorsHost);
+    sensors.reset(new Sensors);
 }
 
 void GPSRx::evaluate(std::complex<float> x){
@@ -68,7 +68,7 @@ void GPSRx::select_satellites(void)
 
 
 
-#define FS 1023000*24
+#define FS 1023000*2
 #include "test_sig.h"
 #include <fstream>
 #include <iostream>
@@ -77,11 +77,11 @@ void GPSRx::select_satellites(void)
 int main(void)
 {
     GPSRx gpsrx(FS);
-    TestSignal t_sig(FS, 32, 0.0f, N_PERIOD - 10, 40.0f, 20.0f);
+    TestSignal t_sig(FS, 32, 0.0f, N_PERIOD - 10);//, 40.0f, 20.0f);
 
-    // while(true){
-    //     gpsrx.evaluate(t_sig.evaluate());
-    // }
+    while(true){
+        gpsrx.evaluate(t_sig.evaluate());
+    }
 
 
 

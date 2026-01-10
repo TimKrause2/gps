@@ -1,59 +1,84 @@
-#
-# This is an example CMakeLists.txt file to compile a program against mathplot
-#
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
+project(gps LANGUAGES CXX C)
 
-# Give your project a name
-project(gps)
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-O3)
+include(FetchContent)
 
-# mathplot uses c++-20 language features
-set(CMAKE_CXX_STANDARD 20)
-
-# Set up CMAKE_CXX_FLAGS
-if (APPLE)
-  set(CMAKE_CXX_FLAGS "-g -O3 -Wall -Wfatal-errors -DGL_SILENCE_DEPRECATION")
-elseif (WIN32)
-  set(CMAKE_CXX_FLAGS "-DNOMINMAX /EHsc /Zc:__cplusplus")
-else()
-  # This assumes a gcc compiler (or a gcc mimic like Clang)
-  set(CMAKE_CXX_FLAGS "-g -O3 -Wall -Wextra -Wpedantic -pedantic-errors -Werror -Wfatal-errors -Wno-psabi -Wno-unknown-pragmas")
-endif()
-
-# Tell the program where the mathplot fonts are, to compile them into the binary
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMPLOT_FONTS_DIR=\"\\\"${PROJECT_SOURCE_DIR}/mathplot/fonts\\\"\"")
-
-# Find the libraries which will be needed by mathplot
-set(OpenGL_GL_PREFERENCE "GLVND") # Following `cmake --help-policy CMP0072`
+# Setup OpenGL
+cmake_policy(SET CMP0072 NEW) # Pefer GLVND over legacy GL libraries
 find_package(OpenGL REQUIRED)
-find_package(glfw3 3.3 REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(Armadillo) # Optional
-find_package(HDF5)      # Optional
+
+# Setup GLFW
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build the GLFW example programs" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build the GLFW test programs" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build the GLFW documentation" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "Generate installation target" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE) # For static library
+
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY "https://github.com/glfw/glfw"
+    GIT_TAG "3.3.8"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(glfw)
+
+# Setup ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY "https://github.com/ocornut/imgui"
+    GIT_TAG "v1.92.4"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(imgui)
+set(IMGUI_SOURCE
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+	${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+add_library(imgui STATIC ${IMGUI_SOURCE})
+target_include_directories(imgui PUBLIC "${imgui_SOURCE_DIR};${imgui_SOURCE_DIR}/backends/")
+target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
+
+# Setup ImPlot
+FetchContent_Declare(
+    implot
+    GIT_REPOSITORY "https://github.com/epezent/implot.git"
+    GIT_TAG "v0.17"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(implot)
+
+set(IMPLOT_SOURCE_DIR ${implot_SOURCE_DIR})
+set(IMPLOT_SOURCE
+    ${IMPLOT_SOURCE_DIR}/implot.cpp
+    ${IMPLOT_SOURCE_DIR}/implot_demo.cpp
+    ${IMPLOT_SOURCE_DIR}/implot_items.cpp
+)
+add_library(implot STATIC ${IMPLOT_SOURCE})
+target_include_directories(implot PUBLIC ${IMPLOT_SOURCE_DIR})
+target_link_libraries(implot PUBLIC imgui)
+
+# setup fftw3f and Eigen
 find_package(PkgConfig REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 pkg_search_module(FFTW3F_PKG REQUIRED IMPORTED_TARGET fftw3f)
 
-# include files for graphics
-set(MPLOT_INC_EXTRA ${ARMADILLO_INCLUDE_DIR} ${ARMADILLO_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
-include_directories(${MPLOT_INC_EXTRA} ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS})
-# Assuming that you installed mathplot in-tree (i.e. 'next to' yourprog.cpp).
-set(MPLOT_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/mathplot" CACHE PATH "The path to mathplot")
-include_directories(BEFORE ${MPLOT_INCLUDE_PATH})         # Allows mplot/Header.h to be found
-include_directories(BEFORE ${MPLOT_INCLUDE_PATH}/maths)   # Allows sm/Header.h to be found
-
-# If you want to add another directory to your include path, you can add an extra include_directories call:
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/my_includes)
-
-#
-# All the library finding is now done. It's time to compile the program.
-#
-
+# Add the executable
 add_executable(gps
   sensors.h sensors.cpp
   timer.h timer.cpp
-  sensorshost.h sensorshost.cpp
 )
 
 target_sources(gps
@@ -65,18 +90,9 @@ target_sources(gps
     moving_avg.h ssiq.h queue.h
 )
 
-target_link_libraries(gps PRIVATE PkgConfig::FFTW3F_PKG Eigen3::Eigen OpenGL::GL Freetype::Freetype glfw)
-# set(MPLOT_LIBS_EXTRA ${ARMADILLO_LIBRARY} ${ARMADILLO_LIBRARIES} ${HDF5_C_LIBRARIES})
+target_link_libraries(gps PRIVATE PkgConfig::FFTW3F_PKG Eigen3::Eigen implot)
 
-#
-# All done!
-#
-
-# This is just a useful stanza for debugging of cmake variables:
-option(DEBUG_VARIABLES OFF)
-if(DEBUG_VARIABLES)
-  get_cmake_property(_variableNames VARIABLES)
-  foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-  endforeach()
-endif(DEBUG_VARIABLES)
+# Silence OpenGL deprecation warnings on macOS
+if(APPLE)
+    target_compile_definitions(example PRIVATE GL_SILENCE_DEPRECATION)
+endif()

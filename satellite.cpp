@@ -55,13 +55,13 @@ Satellite::Satellite(GPSRx &gpsrx, int sat, int fs, float freq)
     first_subframe_processed = false;
     rxstate = RXSTATE_OFFSET_ACQUIRE;
     sat_thread = std::thread(&Satellite::thread_func, this);
-    gpsrx.sHost->send_add_sat(sat);
+    gpsrx.sensors->send_add_sat(sat);
 }
 
 Satellite::~Satellite(){
     fftwf_destroy_plan(rx_plan);
     fftwf_destroy_plan(corr_plan);
-    gpsrx.sHost->send_del_sat(sat);
+    gpsrx.sensors->send_del_sat(sat);
     sat_thread.join();
     printf("Satellite::~Satellite satellite:%d\n", sat+1);
 }
@@ -272,7 +272,7 @@ void Satellite::phase(void)
         if(valid_iq){
             if(++n_valid_iq == 200){
                 printf("PLL locked. satellite:%d\n", sat+1);
-                rxstate = RXSTATE_BIT_ACQUIRE;
+                //rxstate = RXSTATE_BIT_ACQUIRE;
             }
         }else{
             n_valid_iq = 0;
@@ -365,7 +365,7 @@ void Satellite::sensor_iq_evaluate(std::complex<float> x)
 {
     sensor_iq[sensor_iq_index] = x;
     if(++sensor_iq_index==SENSOR_N_DATA){
-        gpsrx.sHost->send_sat_data(sat, SENSOR_N_DATA, std::move(sensor_iq));
+        gpsrx.sensors->send_sat_data(sat, SENSOR_N_DATA, std::move(sensor_iq));
         sensor_iq_index = 0;
         sensor_iq.reset(new std::complex<float>[SENSOR_N_DATA]);
     }

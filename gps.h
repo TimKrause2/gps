@@ -5,7 +5,7 @@
 #include "satellite.h"
 #include "search.h"
 #include "triangulate.h"
-#include "sensorshost.h"
+#include "sensors.h"
 #include <list>
 
 struct GPSRx
@@ -18,7 +18,7 @@ struct GPSRx
     PRNS prns;
     Triangulator triangulator;
     std::unique_ptr<Search> search;
-    std::unique_ptr<SensorsHost> sHost;
+    std::unique_ptr<Sensors> sensors;
     std::list<std::unique_ptr<Satellite>> satellites;
 public:
     GPSRx(int fs);
